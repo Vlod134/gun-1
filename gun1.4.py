@@ -139,6 +139,7 @@ class target():
 		x = self.x = rnd(600, 740)
 		y = self.y = rnd(60, 490)
 		r = self.r = rnd(20, 50)
+		self.Life=1
 		color = self.color = 'red'
 		canv.coords(self.id, x-r, y-r, x+r, y+r)
 		canv.itemconfig(self.id, fill=color)
@@ -146,45 +147,61 @@ class target():
 		self.vy=rnd(-10, 10)
 	
 	def move(self):
-		global balls
-		dist=0
-		dopvx=0
-		dopvy=0
-		force=0
-		for b in balls:
-			dist=math.sqrt((b.x-self.x)*(b.x-self.x)+(b.y-self.y)*(b.y-self.y))
-			force+=int(10000000/(dist*dist*dist))
-			dopvx+=force*(self.x-b.x)/dist
-			dopvy+=force*(self.y-b.y)/dist
-		self.x=self.x+self.vx+dopvx
-		self.y=self.y+self.vy+dopvy
-		if (self.x+self.vx+dopvx>800 and self.vx+dopvx>0) or (self.x+self.vx+dopvx<500 and self.vx+dopvx<0):
-			self.vx=-self.vx
-			dopvx=-dopvx
-			if (self.x+self.vx+dopvx>800 and self.x<5000):
-				self.x=800
-			elif (self.x+self.vx+dopvx<500 and self.x<5000):
-				self.x=500
-		if ((self.y+self.vy+dopvy>550 and self.vy+dopvy>0) or (self.y+self.vy+dopvy<0 and self.vy+dopvy<0)):
-			self.vy=-self.vy
-			dopvy=-dopvy
-			if (self.y+self.vy+dopvy>550 and self.x<5000):
-				self.y=550
-			elif (self.y+self.vy+dopvy<0 and self.x<5000):
-				self.y=0
-		canv.coords(
-				self.id,
-				self.x - self.r,
-				self.y - self.r,
-				self.x + self.r,
-				self.y + self.r)
+		if self.Life==1:
+			global balls
+			dist=0
+			dopvx=0
+			dopvy=0
+			force=0
+			for b in balls:
+				dist=math.sqrt((b.x-self.x)*(b.x-self.x)+(b.y-self.y)*(b.y-self.y))
+				force+=int(10000000/(dist*dist*dist))
+				dopvx+=force*(self.x-b.x)/dist
+				dopvy+=force*(self.y-b.y)/dist
+			self.x=self.x+self.vx+dopvx
+			self.y=self.y+self.vy+dopvy
+			if (self.x+self.vx+dopvx>800 and self.vx+dopvx>0) or (self.x+self.vx+dopvx<500 and self.vx+dopvx<0):
+				self.vx=-self.vx
+				dopvx=-dopvx
+				if (self.x+self.vx+dopvx>800 and self.x<5000):
+					self.x=800
+				elif (self.x+self.vx+dopvx<500 and self.x<5000):
+					self.x=500
+			if ((self.y+self.vy+dopvy>550 and self.vy+dopvy>0) or (self.y+self.vy+dopvy<0 and self.vy+dopvy<0)):
+				self.vy=-self.vy
+				dopvy=-dopvy
+				if (self.y+self.vy+dopvy>550 and self.x<5000):
+					self.y=550
+				elif (self.y+self.vy+dopvy<0 and self.x<5000):
+					self.y=0
+			canv.coords(
+					self.id,
+					self.x - self.r,
+					self.y - self.r,
+					self.x + self.r,
+					self.y + self.r)
 
 	def hit(self, points=1):
 		"""Попадание шарика в цель."""
-		canv.coords(self.id, -10, -10, -10, -10)
-		self.x=-10000
-		self.points += points
+		if self.Life==1:
+			self.points += points
+
+		self.Life=0
+		death_animation(self,10)()
 		canv.itemconfig(self.id_points, text=self.points)
+def death_animation(self, r):
+	def temp():	
+		canv.coords(self.id, self.x-r, self.y-r, self.x+r, self.y+r)
+		if (r<70):
+			canv.itemconfig(self.id, fill='black')
+			root.after(10, death_animation(self,r+1))
+		elif (r<1000):
+			canv.itemconfig(self.id, fill=choice(['blue', 'green', 'red', 'brown']))
+			root.after(10, death_animation(self,r+20+r/1))
+		else:
+			canv.coords(self.id,0,0,0,0)
+			
+	return temp
 
 def target_all_live():
 	global targets
