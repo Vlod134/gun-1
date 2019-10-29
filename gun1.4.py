@@ -3,7 +3,6 @@ import tkinter as tk
 import math
 import time
 
-# print (dir(math))
 
 root = tk.Tk()
 fr = tk.Frame(root)
@@ -147,12 +146,32 @@ class target():
 		self.vy=rnd(-10, 10)
 	
 	def move(self):
-		self.x=self.x+self.vx
-		self.y=self.y+self.vy
-		if (self.x+self.vx>800 or self.x+self.vx<500):
+		global balls
+		dist=0
+		dopvx=0
+		dopvy=0
+		force=0
+		for b in balls:
+			dist=math.sqrt((b.x-self.x)*(b.x-self.x)+(b.y-self.y)*(b.y-self.y))
+			force+=int(10000000/(dist*dist*dist))
+			dopvx+=force*(self.x-b.x)/dist
+			dopvy+=force*(self.y-b.y)/dist
+		self.x=self.x+self.vx+dopvx
+		self.y=self.y+self.vy+dopvy
+		if (self.x+self.vx+dopvx>800 and self.vx+dopvx>0) or (self.x+self.vx+dopvx<500 and self.vx+dopvx<0):
 			self.vx=-self.vx
-		if (self.y+self.vy>550 or self.y+self.vy<0):
+			dopvx=-dopvx
+			if (self.x+self.vx+dopvx>800 and self.x<5000):
+				self.x=800
+			elif (self.x+self.vx+dopvx<500 and self.x<5000):
+				self.x=500
+		if ((self.y+self.vy+dopvy>550 and self.vy+dopvy>0) or (self.y+self.vy+dopvy<0 and self.vy+dopvy<0)):
 			self.vy=-self.vy
+			dopvy=-dopvy
+			if (self.y+self.vy+dopvy>550 and self.x<5000):
+				self.y=550
+			elif (self.y+self.vy+dopvy<0 and self.x<5000):
+				self.y=0
 		canv.coords(
 				self.id,
 				self.x - self.r,
@@ -163,7 +182,7 @@ class target():
 	def hit(self, points=1):
 		"""Попадание шарика в цель."""
 		canv.coords(self.id, -10, -10, -10, -10)
-		self.x=-10000
+		self.x=-100000
 		self.points += points
 		canv.itemconfig(self.id_points, text=self.points)
 
