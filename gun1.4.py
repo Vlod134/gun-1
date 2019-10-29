@@ -24,13 +24,13 @@ class ball():
 		self.r = 10
 		self.vx = 1
 		self.vy = 1
-		self.color = choice(['blue', 'green', 'red', 'brown'])
+		self.color = choice(['blue', 'green', 'yellow', 'brown'])
 		self.id = canv.create_oval(
 				self.x - self.r,
 				self.y - self.r,
 				self.x + self.r,
 				self.y + self.r,
-				fill=self.color
+				fill=self.color, 
 		)
 		self.live = 30
 
@@ -130,9 +130,12 @@ class target():
 		self.live = 1
 		self.vx=rnd(-10, 10)
 		self.vy=rnd(-10, 10)
+		if self.vx==0:
+			self.vx=1
+		if self.vy==0:
+			self.vy=1
 		self.id = canv.create_oval(0,0,0,0)
 		self.id_points = canv.create_text(30,30,text = self.points,font = '28')
-		self.new_target()
 
 	def new_target(self):
 		""" Инициализация новой цели. """
@@ -142,7 +145,7 @@ class target():
 		self.Life=1
 		color = self.color = 'red'
 		canv.coords(self.id, x-r, y-r, x+r, y+r)
-		canv.itemconfig(self.id, fill=color)
+		canv.itemconfig(self.id, fill=color, outline=color)
 		self.vx=rnd(-10, 10)
 		self.vy=rnd(-10, 10)
 	
@@ -160,20 +163,20 @@ class target():
 				dopvy+=force*(self.y-b.y)/dist
 			self.x=self.x+self.vx+dopvx
 			self.y=self.y+self.vy+dopvy
-			if (self.x+self.vx+dopvx>800 and self.vx+dopvx>0) or (self.x+self.vx+dopvx<500 and self.vx+dopvx<0):
+			if (self.x+self.vx+dopvx>800 and self.vx+dopvx>=0) or (self.x+self.vx+dopvx<500 and self.vx+dopvx<0):
 				self.vx=-self.vx
 				dopvx=-dopvx
-				if (self.x+self.vx+dopvx>800 and self.x<5000):
-					self.x=800
-				elif (self.x+self.vx+dopvx<500 and self.x<5000):
-					self.x=500
+			if (self.x+self.vx+dopvx>800):
+				self.x=800
+			elif (self.x+self.vx+dopvx<500):
+				self.x=500
 			if ((self.y+self.vy+dopvy>550 and self.vy+dopvy>0) or (self.y+self.vy+dopvy<0 and self.vy+dopvy<0)):
 				self.vy=-self.vy
 				dopvy=-dopvy
-				if (self.y+self.vy+dopvy>550 and self.x<5000):
-					self.y=550
-				elif (self.y+self.vy+dopvy<0 and self.x<5000):
-					self.y=0
+			if (self.y+self.vy+dopvy>550):
+				self.y=550
+			elif (self.y+self.vy+dopvy<0):
+				self.y=0
 			canv.coords(
 					self.id,
 					self.x - self.r,
@@ -194,10 +197,10 @@ def death_animation(self, r):
 		canv.coords(self.id, self.x-r, self.y-r, self.x+r, self.y+r)
 		if (r<70):
 			canv.itemconfig(self.id, fill='black')
-			root.after(10, death_animation(self,r+1))
+			root.after(100, death_animation(self,r+10))
 		elif (r<1000):
 			canv.itemconfig(self.id, fill=choice(['blue', 'green', 'red', 'brown']))
-			root.after(10, death_animation(self,r+20+r/1))
+			root.after(100, death_animation(self,r+20+r/1))
 		else:
 			canv.coords(self.id,0,0,0,0)
 			
@@ -230,19 +233,19 @@ def new_game(event=''):
 	global gun, screen1, balls, bullet, targets, guns
 	bullet = 0
 	balls = []
-	g2 = gun(20, 450)
-	g3=gun(100, 100)
+	g2 = gun(20, 480)
+	g3 = gun(20, 30)
 	guns=[g3, g2]
-	t1=target()
-	t2=target()
-	t3=target()
-	targets=[t1, t2, t3]
+	targets=[]
+	for t in range(2000):
+		new_t=target()
+		targets.append(new_t)
+	
 	for t in targets:
 		t.new_target()
 	canv.bind('<Button-1>', fire_start)
 	canv.bind('<ButtonRelease-1>', fire_end)
 	canv.bind('<Motion>', targettingg)
-
 
 	for t in targets:
 		t.live = 1
