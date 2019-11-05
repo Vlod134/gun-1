@@ -117,7 +117,7 @@ class gun():
 
 	def power_up(self):
 		if self.f2_on:
-			if self.f2_power < 100:
+			if self.f2_power < 50:
 				self.f2_power += 1
 			canv.itemconfig(self.id, fill='orange')
 		else:
@@ -163,20 +163,34 @@ class target():
 				dopvy+=force*(self.y-b.y)/dist
 			self.x=self.x+self.vx+dopvx
 			self.y=self.y+self.vy+dopvy
-			if (self.x+self.vx+dopvx>800 and self.vx+dopvx>=0) or (self.x+self.vx+dopvx<500 and self.vx+dopvx<0):
+			
+			ogr=100
+			if (dopvx>ogr):
+				dopvx=ogr
+			elif (dopvx<-ogr):
+				dopvx=-ogr
+			if (dopvy>ogr):
+				dopvy=ogr
+			elif (dopvy<-ogr):
+				dopvy=-ogr
+				
+			if (self.x+self.vx+dopvx>800):
+				self.x=800-(self.vx+dopvx-(800-self.x))
 				self.vx=-self.vx
 				dopvx=-dopvx
-			if (self.x+self.vx+dopvx>800):
-				self.x=800
-			elif (self.x+self.vx+dopvx<500):
-				self.x=500
-			if ((self.y+self.vy+dopvy>550 and self.vy+dopvy>0) or (self.y+self.vy+dopvy<0 and self.vy+dopvy<0)):
+			if (self.x+self.vx+dopvx<500):
+				self.x=500-(self.vx+dopvx+(self.x-500))
+				self.vx=-self.vx
+				dopvx=-dopvx
+			if (self.y+self.vy+dopvy>550):
+				self.y=550-(self.vy+dopvy-(550-self.y))
 				self.vy=-self.vy
 				dopvy=-dopvy
-			if (self.y+self.vy+dopvy>550):
-				self.y=550
-			elif (self.y+self.vy+dopvy<0):
-				self.y=0
+			if (self.y+self.vy+dopvy<0):
+				self.y=-self.vy-dopvy-self.y
+				self.vy=-self.vy
+				dopvy=-dopvy
+				
 			canv.coords(
 					self.id,
 					self.x - self.r,
@@ -190,15 +204,15 @@ class target():
 			self.points += points
 
 		self.Life=0
-		death_animation(self,10)()
+		death_animation(self,1)()
 		canv.itemconfig(self.id_points, text=self.points)
 def death_animation(self, r):
 	def temp():	
 		canv.coords(self.id, self.x-r, self.y-r, self.x+r, self.y+r)
-		if (r<70):
+		if (r<35):
 			canv.itemconfig(self.id, fill='black')
 			root.after(100, death_animation(self,r+10))
-		elif (r<1000):
+		elif (r<500):
 			canv.itemconfig(self.id, fill=choice(['blue', 'green', 'red', 'brown']))
 			root.after(100, death_animation(self,r+20+r/1))
 		else:
@@ -233,11 +247,12 @@ def new_game(event=''):
 	global gun, screen1, balls, bullet, targets, guns
 	bullet = 0
 	balls = []
-	g2 = gun(20, 480)
-	g3 = gun(20, 30)
-	guns=[g3, g2]
+	guns=[]
+	for g in range(1):
+		new_g=gun(20, g*40+50)
+		guns.append(new_g)
 	targets=[]
-	for t in range(2000):
+	for t in range(10):
 		new_t=target()
 		targets.append(new_t)
 	
@@ -280,3 +295,5 @@ balls = []
 new_game()
 
 mainloop()
+
+
